@@ -1,15 +1,43 @@
 body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+
     margin: 0;
     font-family: sans-serif;
     background-color: #f0f0f0;
 }
 
-.container {
+.contenido-principal {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; 
+    min-height: 100vh; 
+    width: 100%; 
+}
+
+
+
+.imagenes-superiores {
     text-align: center;
+    margin-bottom: 20px; 
+    display: flex;
+    justify-content: center; 
+    align-items: flex-end; 
+    gap: 10px; 
+}
+
+.imagen-superior {
+    width: 100px; 
+    height: auto;
+    border-radius: 5px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+}
+
+
+.container {
+ 
+    position: relative;
+    z-index: 1;
+    text-align: center; 
 }
 
 h1 {
@@ -17,25 +45,58 @@ h1 {
     font-weight: bold;
     text-transform: uppercase;
     background: linear-gradient(to right, 
-        #ff0000, 
-        #ff7f00,
+        #ff0000,
+        #ff7f00, 
         #ffff00, 
-        #00ff00,
+        #00ff00, 
         #0000ff, 
         #4b0082, 
         #9400d3  
     );
-    background-size: 200% auto; 
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: rainbow-scroll 5s linear infinite; 
+    animation: rainbow-scroll 5s linear infinite;
+    margin-bottom: 0; 
 }
+
+.container p {
+    font-size: 1.2rem;
+    color: #000;
+    margin-top: 5px; 
+    text-align: center;
+}
+
+
+.container {
+    position: relative;
+    text-align: center;
+}
+
+.imagenes-laterales {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    transform: translateY(-50%);
+    padding: 0 20px; 
+}
+
+.imagen-lateral {
+    width: 150px;
+    height: auto;
+}
+
 
 @keyframes rainbow-scroll {
     to {
-        background-position: 200% center; 
+        background-position: 200% center;
     }
 }
+
 
 
 #pausa-boton {
@@ -52,4 +113,16 @@ h1 {
 }
 #pausa-boton:hover {
     background-color: #555;
+}
+
+
+.imagenes-superiores {
+    text-align: center; 
+    margin-bottom: 20px; 
+}
+
+.imagen-superior {
+    width: 150px; 
+    height: auto; 
+    margin: 0 10px; 
 }
