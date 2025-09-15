@@ -17,20 +17,22 @@ h1 {
     font-weight: bold;
     text-transform: uppercase;
     background: linear-gradient(to right, 
-        #ff0000, /* Rojo */
-        #ff7f00, /* Naranja */
-        #ffff00, /* Amarillo */
-        #00ff00, /* Verde */
-        #0000ff, /* Azul */
-        #4b0082, /* Índigo */
-        #9400d3  /* Violeta */
+        #ff0000, 
+        #ff7f00,
+        #ffff00, 
+        #00ff00,
+        #0000ff, 
+        #4b0082, 
+        #9400d3  
     );
+    background-size: 200% auto; 
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: rainbow 5s infinite;
+    animation: rainbow-scroll 5s linear infinite; 
 }
 
-@keyframes rainbow {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 100% 50%; }
+@keyframes rainbow-scroll {
+    to {
+        background-position: 200% center; 
+    }
 }
