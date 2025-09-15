@@ -36,3 +36,20 @@ h1 {
         background-position: 200% center; 
     }
 }
+
+
+#pausa-boton {
+    position: fixed; 
+    bottom: 20px; 
+    left: 20px; 
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000; 
+
+#pausa-boton:hover {
+    background-color: #555;
+}
