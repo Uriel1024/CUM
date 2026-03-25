@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Meteorológico</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="logo-area">
+            <h1>Tarea 1 <em>Probabilidad y Estadistica</em></h1>
+        </div>
+        <nav class="tabs-nav">
+            <button class="tab-btn active" onclick="navegar('clima.html', event)">Clima</button>
+            <button class="tab-btn" onclick="navegar('ejercicio.html', event)">Ejercicio</button>
+            <button class="tab-btn" onclick="navegar('distribuciones.html', event)">Distribuciones</button>
+            <button class="tab-btn" onclick="navegar('covarianza.html', event)">Covarianza</button>
+        </nav>
+    </header>
+
+    <main id="content-area">
+        <iframe src="clima.html" id="main-frame" frameborder="0"></iframe>
+    </main>
+
+    <script src="script.js"></script>z
+</body>
+</html>
