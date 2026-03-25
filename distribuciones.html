@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distribuciones de Probabilidad — Detalle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=DM+Mono&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0d0f14; --surface: #141720; --surface2: #1c2030;
+            --text: #e8ecf4; --muted: rgba(232,236,244,0.55);
+            --accent: #f97316; --accent2: #fbbf24; --border: rgba(255,255,255,0.07);
+            --r: 20px;
+        }
+
+        /* Scrollbar estilizado */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        body {
+            font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text);
+            margin: 0; padding: 40px 20px;
+            display: flex; flex-direction: column; align-items: center; gap: 60px;
+        }
+
+        .section {
+            width: 100%; max-width: 900px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--r); padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .header-dist { margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        
+        h2 { 
+            font-family: 'DM Serif Display', serif; font-size: 2rem; 
+            margin: 0; color: var(--accent2); font-weight: 400; 
+        }
+        
+        .desc { color: var(--muted); font-size: 0.95rem; margin-top: 5px; }
+
+        .layout { display: grid; grid-template-columns: 280px 1fr; gap: 30px; }
+        @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+
+        .controls { display: flex; flex-direction: column; gap: 20px; justify-content: center; }
+        
+        .control-group { 
+            background: var(--surface2); padding: 15px; border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        label { 
+            display: block; font-size: 0.75rem; text-transform: uppercase; 
+            letter-spacing: 1px; color: var(--accent); margin-bottom: 10px; font-weight: 700;
+        }
+
+        input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+        
+        .val-display { 
+            font-family: 'DM Mono', monospace; font-size: 1.2rem; 
+            color: var(--text); display: block; margin-top: 5px; 
+        }
+
+        .chart-container { min-height: 350px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="section">
+    <div class="header-dist">
+        <h2>Distribución Normal</h2>
+        <p class="desc">Distribución continua definida por su media y desviación estándar.</p>
+    </div>
+    <div class="layout">
+        <div class="controls">
+            <div class="control-group">
+                <label>Media (μ)</label>
+                <input type="range" id="normMu" min="-10" max="10" step="0.5" value="0">
+                <span class="val-display" id="normMuVal">0</span>
+            </div>
+            <div class="control-group">
+                <label>Desv. Estándar (σ)</label>
+                <input type="range" id="normSigma" min="0.5" max="5" step="0.1" value="1.5">
+                <span class="val-display" id="normSigmaVal">1.5</span>
+            </div>
+        </div>
+        <div class="chart-container"><canvas id="chartNormal"></canvas></div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="header-dist">
+        <h2>Distribución Binomial</h2>
+        <p class="desc">Probabilidad de éxito en 'n' ensayos independientes.</p>
+    </div>
+    <div class="layout">
+        <div class="controls">
+            <div class="control-group">
+                <label>Número de Ensayos (n)</label>
+                <input type="range" id="binomN" min="5" max="50" value="20">
+                <span class="val-display" id="binomNVal">20</span>
+            </div>
+            <div class="control-group">
+                <label>Prob. de Éxito (p)</label>
+                <input type="range" id="binomP" min="0.05" max="0.95" step="0.05" value="0.5">
+                <span class="val-display" id="binomPVal">0.5</span>
+            </div>
+        </div>
+        <div class="chart-container"><canvas id="chartBinomial"></canvas></div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="header-dist">
+        <h2>Distribución de Poisson</h2>
+        <p class="desc">Número de eventos en un intervalo de tiempo fijo.</p>
+    </div>
+    <div class="layout">
+        <div class="controls">
+            <div class="control-group">
+                <label>Frecuencia (λ)</label>
+                <input type="range" id="poiLambda" min="1" max="25" step="1" value="5">
+                <span class="val-display" id="poiLambdaVal">5</span>
+            </div>
+        </div>
+        <div class="chart-container"><canvas id="chartPoisson"></canvas></div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="header-dist">
+        <h2>Distribución Exponencial</h2>
+        <p class="desc">Tiempo entre eventos en un proceso de Poisson.</p>
+    </div>
+    <div class="layout">
+        <div class="controls">
+            <div class="control-group">
+                <label>Tasa de Eventos (λ)</label>
+                <input type="range" id="expLambda" min="0.2" max="4" step="0.2" value="1">
+                <span class="val-display" id="expLambdaVal">1</span>
+            </div>
+        </div>
+        <div class="chart-container"><canvas id="chartExp"></canvas></div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="header-dist">
+        <h2>Distribución Geométrica</h2>
+        <p class="desc">Número de intentos hasta el primer éxito.</p>
+    </div>
+    <div class="layout">
+        <div class="controls">
+            <div class="control-group">
+                <label>Prob. de Éxito (p)</label>
+                <input type="range" id="geoP" min="0.1" max="0.9" step="0.1" value="0.3">
+                <span class="val-display" id="geoPVal">0.3</span>
+            </div>
+        </div>
+        <div class="chart-container"><canvas id="chartGeo"></canvas></div>
+    </div>
+</div>
+
+<script>
+    // Configuración Base de Gráficos
+    Chart.defaults.color = 'rgba(232,236,244,0.6)';
+    Chart.defaults.font.family = "'Outfit', sans-serif";
+
+    const fact = n => n <= 1 ? 1 : n * fact(n - 1);
+    const comb = (n, k) => fact(n) / (fact(k) * fact(n - k));
+
+    function initChart(id, type, color) {
+        return new Chart(document.getElementById(id), {
+            type: type,
+            data: { labels: [], datasets: [{ data: [], backgroundColor: color, borderColor: color, tension: 0.4, fill: type === 'line' }] },
+            options: { 
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+            }
+        });
+    }
+
+    const charts = {
+        norm: initChart('chartNormal', 'line', '#f97316'),
+        binom: initChart('chartBinomial', 'bar', '#fbbf24'),
+        poi: initChart('chartPoisson', 'bar', '#38bdf8'),
+        exp: initChart('chartExp', 'line', '#818cf8'),
+        geo: initChart('chartGeo', 'bar', '#34d399')
+    };
+
+    function update() {
+        // Normal
+        const m = +document.getElementById('normMu').value, s = +document.getElementById('normSigma').value;
+        document.getElementById('normMuVal').innerText = m; document.getElementById('normSigmaVal').innerText = s;
+        charts.norm.data.labels = Array.from({length: 40}, (_, i) => (m - 3*s + (i*6*s/40)).toFixed(1));
+        charts.norm.data.datasets[0].data = charts.norm.data.labels.map(x => (1/(s*Math.sqrt(2*Math.PI))) * Math.exp(-0.5*((x-m)/s)**2));
+        charts.norm.update();
+
+        // Binomial
+        const bn = +document.getElementById('binomN').value, bp = +document.getElementById('binomP').value;
+        document.getElementById('binomNVal').innerText = bn; document.getElementById('binomPVal').innerText = bp;
+        charts.binom.data.labels = Array.from({length: bn + 1}, (_, i) => i);
+        charts.binom.data.datasets[0].data = charts.binom.data.labels.map(k => comb(bn, k) * Math.pow(bp, k) * Math.pow(1-bp, bn-k));
+        charts.binom.update();
+
+        // Poisson
+        const pl = +document.getElementById('poiLambda').value;
+        document.getElementById('poiLambdaVal').innerText = pl;
+        charts.poi.data.labels = Array.from({length: Math.max(20, pl*2)}, (_, i) => i);
+        charts.poi.data.datasets[0].data = charts.poi.data.labels.map(k => (Math.pow(pl, k) * Math.exp(-pl)) / fact(k));
+        charts.poi.update();
+
+        // Exponencial
+        const el = +document.getElementById('expLambda').value;
+        document.getElementById('expLambdaVal').innerText = el;
+        charts.exp.data.labels = Array.from({length: 30}, (_, i) => (i*0.2).toFixed(1));
+        charts.exp.data.datasets[0].data = charts.exp.data.labels.map(x => el * Math.exp(-el * x));
+        charts.exp.update();
+
+        // Geométrica
+        const gp = +document.getElementById('geoP').value;
+        document.getElementById('geoPVal').innerText = gp;
+        charts.geo.data.labels = Array.from({length: 12}, (_, i) => i + 1);
+        charts.geo.data.datasets[0].data = charts.geo.data.labels.map(k => Math.pow(1-gp, k-1) * gp);
+        charts.geo.update();
+    }
+
+    document.querySelectorAll('input').forEach(i => i.addEventListener('input', update));
+    update();
+</script>
+
+</body>
+</html>

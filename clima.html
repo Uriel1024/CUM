@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis de Temperatura — Estaciones Meteorológicas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg: #0d0f14;
+  --surface: #141720;
+  --surface2: #1c2030;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+
+  --text: #e8ecf4;
+  --muted: rgba(232,236,244,0.55);
+  --muted2: rgba(232,236,244,0.35);
+
+  --accent: #f97316;        /* naranja cálido */
+  --accent2: #fbbf24;       /* ámbar */
+  --cool: #38bdf8;          /* azul frío */
+  --cool2: #818cf8;         /* violeta */
+
+  --ok: #34d399;
+  --bad: #f87171;
+
+  --r: 16px;
+  --r-sm: 10px;
+  --mono: 'DM Mono', monospace;
+
+  --glow-warm: 0 0 32px rgba(249,115,22,0.22);
+  --glow-cool: 0 0 32px rgba(56,189,248,0.18);
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+html{ scroll-behavior:smooth; }
+
+body{
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 60px;
+
+  background-image:
+    radial-gradient(ellipse 700px 400px at 90% 10%, rgba(249,115,22,0.07), transparent 70%),
+    radial-gradient(ellipse 600px 350px at 10% 80%, rgba(56,189,248,0.07), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* ─────────────── HEADER ─────────────── */
+header{
+  border-bottom: 1px solid var(--border);
+  padding: 20px 24px 16px;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: rgba(13,15,20,0.92);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.logo-area h1{
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(18px, 2.5vw, 26px);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.logo-area h1 em{
+  font-style: italic;
+  color: var(--accent2);
+}
+
+.logo-area p{
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-weight: 300;
+}
+
+.badges{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+  align-items: center;
+}
+
+.badge{
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid;
+  letter-spacing: 0.04em;
+}
+
+.badge-warm{
+  color: var(--accent);
+  border-color: rgba(249,115,22,0.35);
+  background: rgba(249,115,22,0.08);
+}
+
+.badge-cool{
+  color: var(--cool);
+  border-color: rgba(56,189,248,0.30);
+  background: rgba(56,189,248,0.07);
+}
+
+/* ─────────────── MAIN WRAP ─────────────── */
+.wrap{
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  display: grid;
+  gap: 18px;
+}
+
+/* ─────────────── PROBLEMA / INTRO ─────────────── */
+.intro{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px 22px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: start;
+}
+
+@media(max-width:680px){ .intro{ grid-template-columns:1fr; } }
+
+.intro h2{
+  font-family: 'DM Serif Display', serif;
+  font-weight: 400;
+  font-size: clamp(15px, 1.6vw, 19px);
+  margin-bottom: 10px;
+}
+
+.intro p{
+  font-size: clamp(13.2px, 0.9rem + 0.25vw, 14.5px);
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.intro p strong{ color: var(--text); font-weight: 700; }
+
+.stat-chips{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
+}
+
+.schip{
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-sm);
+  padding: 9px 12px;
+  font-size: 12.2px;
+}
+
+.schip .sv{
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--accent2);
+  display: block;
+}
+
+.schip .sl{ color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+
+/* ─────────────── CONTROLES ─────────────── */
+.ctrl-bar{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px 20px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.ctrl-group{
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1 1 140px;
+}
+
+label{
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted2);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+select, input[type="number"]{
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  border-radius: var(--r-sm);
+  padding: 9px 11px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+select:focus, input:focus{
+  border-color: rgba(249,115,22,0.55);
+  box-shadow: 0 0 0 3px rgba(249,115,22,0.12);
+}
+
+.btn-row{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+button{
+  cursor: pointer;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 10px 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  transition: filter .12s, transform .08s, box-shadow .12s;
+}
+
+button:active{ transform: translateY(1px); }
+
+.btn-primary{
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #0d0f14;
+  box-shadow: 0 8px 22px rgba(249,115,22,0.28);
+}
+
+.btn-primary:hover{ filter: brightness(1.08); }
+
+.btn-sec{
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+
+.btn-sec:hover{ border-color: rgba(255,255,255,0.2); }
+
+/* ─────────────── KPI ROW ─────────────── */
+.kpi-row{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.kpi-box{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 14px 12px;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.kpi-box:hover{
+  border-color: rgba(249,115,22,0.3);
+  box-shadow: var(--glow-warm);
+}
+
+.kpi-box .kl{ font-size: 11px; color: var(--muted2); font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; }
+.kpi-box .kv{ font-family: var(--mono); font-size: 22px; font-weight: 500; margin-top: 6px; color: var(--accent2); }
+.kpi-box .ku{ font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* ─────────────── CHARTS GRID ─────────────── */
+.charts-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media(max-width:860px){ .charts-grid{ grid-template-columns:1fr; } }
+
+.chart-card{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart-card h3{
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.chart-card h3 span{
+  font-size: 16px;
+}
+
+canvas{
+  display: block;
+  width: 100%;
+  height: clamp(220px, 28vw, 300px);
+  background: transparent;
+  border-radius: var(--r-sm);
+}
+
+.legend{
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.dot{
+  display: inline-block;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+/* ─────────────── TABLE SECTION ─────────────── */
+.table-wrap{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+.table-head{
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+table{
+  width: 100%;
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+th, td{
+  padding: 10px 14px;
+  text-align: center;
+  font-size: 12.8px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+th{
+  background: var(--surface2);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+tr:last-child td{ border-bottom: none; }
+tr:hover td{ background: rgba(255,255,255,0.025); }
+
+.chip-warm{
+  display: inline-block;
+  background: rgba(249,115,22,0.15);
+  color: var(--accent);
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--mono);
+}
+
+.chip-cool{
+  display: inline-block;
+  background: rgba(56,189,248,0.12);
+  color: var(--cool);
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--mono);
+}
+
+/* ─────────────── BOXPLOT CUSTOM ─────────────── */
+.boxplot-row{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px;
+}
+
+.boxplot-row h3{
+  font-size: 13.5px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+canvas#box{
+  height: clamp(180px, 22vw, 260px);
+}
+
+/* ─────────────── FOOTER MONO ─────────────── */
+.footer-note{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted2);
+  line-height: 1.7;
+}
+
+/* responsive tweaks */
+@media(max-width:520px){
+  .wrap{ padding: 16px 14px; }
+  .intro{ padding: 16px; }
+}
+
+@media(prefers-reduced-motion: reduce){
+  *{ transition: none !important; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo-area">
+    <h1>🌡️ Análisis de <em>Temperatura</em></h1>
+    <p>Red de Estaciones Meteorológicas · Estadística Descriptiva</p>
+  </div>
+  <div class="badges">
+    <span class="badge badge-warm">8 Estaciones</span>
+    <span class="badge badge-cool">365 Días</span>
+  </div>
+</header>
+
+
+<nav class="tabs-nav">
+  <button class="tab-btn active" onclick="openTab(event, 'tab-analisis')">Análisis Térmico</button>
+  <button class="tab-btn" onclick="openTab(event, 'tab-ejercicio')">Ejercicio</button>
+  <button class="tab-btn" onclick="openTab(event, 'tab-distribuciones')">Distribuciones</button>
+  <button class="tab-btn" onclick="openTab(event, 'tab-covarianza')">Covarianza</button>
+</nav>
+
+<div id="tab-analisis" class="tab-content active">
+   </div>
+
+<div class="wrap">
+
+  <!-- INTRO -->
+  <div class="intro">
+    <div>
+      <h2>Descripción del problema</h2>
+      <p>
+        Una red de <strong>8 estaciones meteorológicas</strong> registra la temperatura diaria máxima (°C)
+        durante <strong>365 días</strong>. Se busca analizar la distribución térmica anual mediante
+        <strong>histogramas de frecuencia</strong>, <strong>diagramas de caja y bigotes</strong> por mes,
+        y una <strong>tabla de estadísticos descriptivos</strong> por estación.
+        El objetivo es identificar patrones estacionales, valores atípicos y la variabilidad entre estaciones.
+      </p>
+    </div>
+    <div class="stat-chips" id="statChips">
+      <div class="schip"><span class="sv" id="sc1">—</span><span class="sl">Promedio global (°C)</span></div>
+      <div class="schip"><span class="sv" id="sc2">—</span><span class="sl">Temp. máxima (°C)</span></div>
+      <div class="schip"><span class="sv" id="sc3">—</span><span class="sl">Temp. mínima (°C)</span></div>
+    </div>
+  </div>
+
+  <!-- CONTROLES -->
+  <div class="ctrl-bar">
+    <div class="ctrl-group">
+      <label>Estación</label>
+      <select id="selEstacion" onchange="actualizarVistas()">
+        <option value="all">Todas las estaciones</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>Mes (caja y bigotes)</label>
+      <select id="selMes" onchange="actualizarVistas()"></select>
+    </div>
+    <div class="ctrl-group">
+      <label>Bins del histograma</label>
+      <input type="number" id="inputBins" value="12" min="5" max="30" onchange="actualizarVistas()">
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="generarDatos()">⟳ Generar datos</button>
+      <button class="btn-sec" onclick="exportarCSV()">↓ CSV</button>
+    </div>
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="kpi-row" id="kpiRow">
+    <div class="kpi-box"><div class="kl">Mediana</div><div class="kv" id="kv1">—</div><div class="ku">°C</div></div>
+    <div class="kpi-box"><div class="kl">Q1</div><div class="kv" id="kv2">—</div><div class="ku">°C</div></div>
+    <div class="kpi-box"><div class="kl">Q3</div><div class="kv" id="kv3">—</div><div class="ku">°C</div></div>
+    <div class="kpi-box"><div class="kl">RIC</div><div class="kv" id="kv4">—</div><div class="ku">°C</div></div>
+    <div class="kpi-box"><div class="kl">Desv. típica</div><div class="kv" id="kv5">—</div><div class="ku">°C</div></div>
+    <div class="kpi-box"><div class="kl">Rango</div><div class="kv" id="kv6">—</div><div class="ku">°C</div></div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3><span>📈</span> Histograma de frecuencias</h3>
+      <canvas id="hist"></canvas>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--accent)"></span>Frecuencia absoluta</span>
+        <span><span class="dot" style="background:var(--accent2)"></span>Curva de densidad</span>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3><span>📊</span> Caja y bigotes — Mes seleccionado</h3>
+      <canvas id="box"></canvas>
+      <div class="legend" id="boxLegend">
+        <span><span class="dot" style="background:var(--cool)"></span>Caja IQR</span>
+        <span><span class="dot" style="background:var(--ok)"></span>Mediana</span>
+        <span><span class="dot" style="background:var(--muted2)"></span>Bigotes / Atípicos</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOX POR ESTACIÓN (mes seleccionado) -->
+  <div class="boxplot-row">
+    <h3>📦 Comparación entre estaciones — Mes seleccionado</h3>
+    <canvas id="boxCompar" style="height:clamp(200px,25vw,280px)"></canvas>
+  </div>
+
+  <!-- TABLA -->
+  <div class="table-wrap">
+    <div class="table-head">
+      <span>Estadísticos descriptivos por estación</span>
+      <span style="font-size:12px;font-weight:400;color:var(--muted)" id="labelMes"></span>
+    </div>
+    <table id="tbl">
+      <thead><tr id="tHead"></tr></thead>
+      <tbody id="tBody"></tbody>
+    </table>
+  </div>
+
+  <!-- FOOTER NOTE -->
+  <div class="footer-note" id="footerNote">
+    // Los datos son simulados con distribución normal por temporada<br>
+    // Carga inicial: generando valores aleatorios...
+  </div>
+
+</div>
+
+<script>
+/* ===== CONFIGURACIÓN ===== */
+const N_EST   = 8;
+const N_DIAS  = 365;
+const NOMBRES = ["Norte-1","Norte-2","Centro","Sur-1","Sur-2","Costa","Sierra","Valle"];
+const MESES   = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                 "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const DIAS_MES= [31,28,31,30,31,30,31,31,30,31,30,31];
+
+/* data[estacion][dia] = temperatura */
+let data = [];
+
+/* ===== UTILIDADES ESTADÍSTICAS ===== */
+const suma   = a => a.reduce((s,v)=>s+v,0);
+const media  = a => suma(a)/a.length;
+const ord    = a => [...a].sort((x,y)=>x-y);
+
+function cuantil(arr, p){
+  const s=ord(arr), n=s.length;
+  const pos = p*(n-1);
+  const lo=Math.floor(pos), hi=Math.ceil(pos);
+  if(lo===hi) return s[lo];
+  return s[lo]*(hi-pos) + s[hi]*(pos-lo);
+}
+
+function desv(arr){
+  const m=media(arr);
+  return Math.sqrt(arr.reduce((s,v)=>s+(v-m)**2,0)/arr.length);
+}
+
+function boxStats(arr){
+  const s=ord(arr);
+  const q1=cuantil(s,0.25), q2=cuantil(s,0.50), q3=cuantil(s,0.75);
+  const iqr=q3-q1;
+  const wLo=Math.max(s[0], q1-1.5*iqr);
+  const wHi=Math.min(s[s.length-1], q3+1.5*iqr);
+  const out=s.filter(v=>v<wLo||v>wHi);
+  return {q1,q2,q3,iqr,wLo,wHi,min:s[0],max:s[s.length-1],out};
+}
+
+/* ===== GENERACIÓN DE DATOS ===== */
+function randn(){
+  let u=0,v=0;
+  while(!u) u=Math.random();
+  while(!v) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+/* Temperatura base por día del año (patrón sinusoidal) */
+function tempBase(dia){
+  /* pico en julio ~día 196, mín en enero */
+  return 22 + 14*Math.sin(2*Math.PI*(dia-80)/365);
+}
+
+function generarDatos(){
+  data = [];
+  for(let e=0;e<N_EST;e++){
+    let fila=[];
+    /* cada estación tiene un offset propio */
+    const offset = (e-3.5)*1.8;
+    for(let d=0;d<N_DIAS;d++){
+      const base = tempBase(d) + offset;
+      const temp = base + randn()*3.2;
+      fila.push(+temp.toFixed(1));
+    }
+    data.push(fila);
+  }
+  llenarSelects();
+  actualizarVistas();
+}
+
+/* ===== SELECTS ===== */
+function llenarSelects(){
+  const selE=document.getElementById("selEstacion");
+  selE.innerHTML="<option value='all'>Todas las estaciones</option>";
+  NOMBRES.forEach((n,i)=>{
+    let op=document.createElement("option");
+    op.value=i; op.text=n; selE.appendChild(op);
+  });
+
+  const selM=document.getElementById("selMes");
+  selM.innerHTML="";
+  MESES.forEach((m,i)=>{
+    let op=document.createElement("option");
+    op.value=i; op.text=m; selM.appendChild(op);
+  });
+  selM.value=6; /* julio por defecto */
+}
+
+/* ===== DATOS FILTRADOS ===== */
+function datosEstacion(e){
+  return e==="all" ? data.flat() : data[parseInt(e)];
+}
+
+function datosMes(e,m){
+  /* offset de inicio del mes m en el año */
+  let inicio=0;
+  for(let i=0;i<m;i++) inicio+=DIAS_MES[i];
+  const len=DIAS_MES[m];
+  if(e==="all"){
+    return data.map(fila=>fila.slice(inicio,inicio+len)).flat();
+  }
+  return data[parseInt(e)].slice(inicio,inicio+len);
+}
+
+/* ===== ACTUALIZAR TODO ===== */
+function actualizarVistas(){
+  const eVal=document.getElementById("selEstacion").value;
+  const mVal=parseInt(document.getElementById("selMes").value);
+  const bins=Math.max(5,Math.min(30,parseInt(document.getElementById("inputBins").value)||12));
+
+  const todosDatos = datosEstacion(eVal);
+  const messDatos  = datosMes(eVal, mVal);
+
+  actualizarKPI(todosDatos);
+  actualizarChips(todosDatos);
+  dibujarHist(todosDatos, bins);
+  dibujarBox(messDatos);
+  dibujarBoxCompar(mVal);
+  actualizarTabla();
+  document.getElementById("labelMes").textContent = "Año completo · "+MESES[mVal];
+  actualizarFooter(todosDatos, eVal);
+}
+
+/* ===== KPI ===== */
+function actualizarKPI(arr){
+  const b=boxStats(arr);
+  const d=desv(arr);
+  document.getElementById("kv1").textContent=b.q2.toFixed(1);
+  document.getElementById("kv2").textContent=b.q1.toFixed(1);
+  document.getElementById("kv3").textContent=b.q3.toFixed(1);
+  document.getElementById("kv4").textContent=b.iqr.toFixed(1);
+  document.getElementById("kv5").textContent=d.toFixed(2);
+  document.getElementById("kv6").textContent=(b.max-b.min).toFixed(1);
+}
+
+function actualizarChips(arr){
+  const m=media(arr), mx=Math.max(...arr), mn=Math.min(...arr);
+  document.getElementById("sc1").textContent=m.toFixed(1);
+  document.getElementById("sc2").textContent=mx.toFixed(1);
+  document.getElementById("sc3").textContent=mn.toFixed(1);
+}
+
+/* ===== HISTOGRAMA ===== */
+function dibujarHist(vals, bins){
+  const c=document.getElementById("hist");
+  const ctx=c.getContext("2d");
+  c.width=c.offsetWidth||600; c.height=c.offsetHeight||280;
+  ctx.clearRect(0,0,c.width,c.height);
+
+  const mn=Math.min(...vals), mx=Math.max(...vals);
+  const ancho_bin=(mx-mn)/bins;
+  const cont=new Array(bins).fill(0);
+  vals.forEach(v=>{
+    const i=Math.min(Math.floor((v-mn)/ancho_bin), bins-1);
+    cont[i]++;
+  });
+  const maxC=Math.max(...cont);
+
+  const pad={top:20,right:20,bot:38,left:44};
+  const W=c.width-pad.left-pad.right;
+  const H=c.height-pad.top-pad.bot;
+
+  /* ejes */
+  ctx.strokeStyle="rgba(255,255,255,0.08)";
+  ctx.lineWidth=1;
+  for(let g=0;g<=5;g++){
+    const y=pad.top+H*(1-g/5);
+    ctx.beginPath(); ctx.moveTo(pad.left,y); ctx.lineTo(pad.left+W,y); ctx.stroke();
+  }
+
+  const bw=W/bins;
+
+  /* barras */
+  cont.forEach((v,i)=>{
+    const h=(v/maxC)*H;
+    const x=pad.left+i*bw, y=pad.top+H-h;
+
+    const grad=ctx.createLinearGradient(0,y,0,y+h);
+    grad.addColorStop(0,"rgba(249,115,22,0.85)");
+    grad.addColorStop(1,"rgba(251,191,36,0.60)");
+    ctx.fillStyle=grad;
+    ctx.beginPath();
+    ctx.roundRect(x+2, y, bw-4, h, [4,4,0,0]);
+    ctx.fill();
+  });
+
+  /* curva de densidad (KDE suave) */
+  const paso=W/(bins*4);
+  ctx.beginPath();
+  ctx.strokeStyle="rgba(251,191,36,0.90)";
+  ctx.lineWidth=2.5;
+  let first=true;
+  for(let p=0;p<=bins*4;p++){
+    const xv=mn + (p/(bins*4))*(mx-mn);
+    /* KDE gaussiano simplificado */
+    const h_bw=(mx-mn)*0.08;
+    let dens=0;
+    vals.forEach(v=>{ dens+=Math.exp(-0.5*((xv-v)/h_bw)**2)/(h_bw*Math.sqrt(2*Math.PI)); });
+    dens/=vals.length;
+    const scale=maxC/vals.length*(mx-mn)/bins;
+    const yy=pad.top+H-(dens*scale/maxC)*H;
+    if(first){ ctx.moveTo(pad.left+p*paso,yy); first=false; }
+    else ctx.lineTo(pad.left+p*paso,yy);
+  }
+  ctx.stroke();
+
+  /* etiquetas eje X */
+  ctx.fillStyle="rgba(232,236,244,0.45)";
+  ctx.font="10px 'DM Mono',monospace";
+  ctx.textAlign="center";
+  for(let i=0;i<=bins;i+=Math.ceil(bins/6)){
+    const lbl=(mn+i*ancho_bin).toFixed(0)+"°";
+    ctx.fillText(lbl, pad.left+i*bw, c.height-10);
+  }
+
+  /* etiquetas eje Y */
+  ctx.textAlign="right";
+  for(let g=0;g<=4;g++){
+    const val=Math.round(maxC*g/4);
+    ctx.fillText(val, pad.left-6, pad.top+H*(1-g/4)+4);
+  }
+}
+
+/* ===== BOX PRINCIPAL ===== */
+function dibujarBox(vals){
+  const c=document.getElementById("box");
+  const ctx=c.getContext("2d");
+  c.width=c.offsetWidth||600; c.height=c.offsetHeight||260;
+  ctx.clearRect(0,0,c.width,c.height);
+
+  const b=boxStats(vals);
+  const pad={top:24,right:30,bot:30,left:44};
+  const W=c.width-pad.left-pad.right;
+  const H=c.height-pad.top-pad.bot;
+
+  const mn=b.wLo-4, mx=b.wHi+4;
+  const sc=v=>pad.left + (v-mn)/(mx-mn)*W;
+
+  /* grid */
+  ctx.strokeStyle="rgba(255,255,255,0.07)";
+  ctx.lineWidth=1;
+  [mn,(mn+mx)/2,mx].forEach(v=>{
+    ctx.beginPath(); ctx.moveTo(sc(v),pad.top); ctx.lineTo(sc(v),pad.top+H); ctx.stroke();
+  });
+
+  const cy=pad.top+H/2;
+  const boxH=H*0.36;
+
+  /* bigotes */
+  ctx.strokeStyle="rgba(232,236,244,0.40)";
+  ctx.lineWidth=2;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(sc(b.wLo),cy); ctx.lineTo(sc(b.q1),cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(sc(b.q3),cy); ctx.lineTo(sc(b.wHi),cy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* tapas bigotes */
+  [[b.wLo],[b.wHi]].forEach(([v])=>{
+    ctx.strokeStyle="rgba(232,236,244,0.50)";
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(sc(v), cy-boxH*0.28);
+    ctx.lineTo(sc(v), cy+boxH*0.28);
+    ctx.stroke();
+  });
+
+  /* caja */
+  const grad=ctx.createLinearGradient(sc(b.q1),0,sc(b.q3),0);
+  grad.addColorStop(0,"rgba(56,189,248,0.25)");
+  grad.addColorStop(1,"rgba(129,140,248,0.20)");
+  ctx.fillStyle=grad;
+  ctx.strokeStyle="rgba(56,189,248,0.60)";
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.roundRect(sc(b.q1), cy-boxH/2, sc(b.q3)-sc(b.q1), boxH, 6);
+  ctx.fill(); ctx.stroke();
+
+  /* mediana */
+  ctx.strokeStyle="var(--ok)";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.moveTo(sc(b.q2), cy-boxH/2);
+  ctx.lineTo(sc(b.q2), cy+boxH/2);
+  ctx.stroke();
+
+  /* atípicos */
+  b.out.forEach(v=>{
+    ctx.beginPath();
+    ctx.arc(sc(v), cy, 4, 0, Math.PI*2);
+    ctx.fillStyle="rgba(248,113,113,0.80)";
+    ctx.fill();
+  });
+
+  /* etiquetas */
+  ctx.fillStyle="rgba(232,236,244,0.50)";
+  ctx.font="10px 'DM Mono',monospace";
+  ctx.textAlign="center";
+  [[b.wLo,"Mín"],[b.q1,"Q1"],[b.q2,"Med"],[b.q3,"Q3"],[b.wHi,"Máx"]].forEach(([v,lbl])=>{
+    ctx.fillText(lbl,sc(v),pad.top+H+18);
+    ctx.fillText(v.toFixed(1)+"°",sc(v),pad.top-8);
+  });
+}
+
+/* ===== BOX COMPARATIVO POR ESTACIÓN ===== */
+function dibujarBoxCompar(mes){
+  const c=document.getElementById("boxCompar");
+  const ctx=c.getContext("2d");
+  c.width=c.offsetWidth||900; c.height=c.offsetHeight||240;
+  ctx.clearRect(0,0,c.width,c.height);
+
+  const boxs=NOMBRES.map((_,e)=>boxStats(datosMes(e,mes)));
+  const allVals=boxs.map(b=>[b.wLo,b.wHi]).flat();
+  const mn=Math.min(...allVals)-3, mx=Math.max(...allVals)+3;
+
+  const pad={top:22,right:20,bot:30,left:52};
+  const W=c.width-pad.left-pad.right;
+  const H=c.height-pad.top-pad.bot;
+
+  const sc=v=>pad.left+(v-mn)/(mx-mn)*W;
+  const rowH=H/N_EST;
+
+  /* grid */
+  ctx.strokeStyle="rgba(255,255,255,0.06)";
+  ctx.lineWidth=1;
+  for(let g=0;g<=5;g++){
+    const x=pad.left+g*W/5;
+    ctx.beginPath(); ctx.moveTo(x,pad.top); ctx.lineTo(x,pad.top+H); ctx.stroke();
+  }
+
+  const COLORS_BOX=[
+    "rgba(56,189,248,0.60)","rgba(129,140,248,0.60)","rgba(249,115,22,0.60)",
+    "rgba(52,211,153,0.60)","rgba(251,191,36,0.60)","rgba(248,113,113,0.60)",
+    "rgba(167,243,208,0.60)","rgba(196,181,253,0.60)"
+  ];
+
+  boxs.forEach((b,i)=>{
+    const cy=pad.top+rowH*(i+0.5);
+    const bH=rowH*0.28;
+
+    /* etiqueta estación */
+    ctx.fillStyle="rgba(232,236,244,0.55)";
+    ctx.font="10.5px 'Outfit',sans-serif";
+    ctx.textAlign="right";
+    ctx.fillText(NOMBRES[i], pad.left-7, cy+3.5);
+
+    /* bigotes */
+    ctx.strokeStyle="rgba(232,236,244,0.25)";
+    ctx.lineWidth=1.5;
+    ctx.setLineDash([3,2]);
+    ctx.beginPath(); ctx.moveTo(sc(b.wLo),cy); ctx.lineTo(sc(b.q1),cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sc(b.q3),cy); ctx.lineTo(sc(b.wHi),cy); ctx.stroke();
+    ctx.setLineDash([]);
+
+    /* caja */
+    ctx.fillStyle=COLORS_BOX[i].replace("0.60","0.18");
+    ctx.strokeStyle=COLORS_BOX[i];
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.roundRect(sc(b.q1), cy-bH, sc(b.q3)-sc(b.q1), bH*2, 4);
+    ctx.fill(); ctx.stroke();
+
+    /* mediana */ 
+    ctx.strokeStyle=COLORS_BOX[i];
+    ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(sc(b.q2),cy-bH); ctx.lineTo(sc(b.q2),cy+bH); ctx.stroke();
+
+    /* atípicos */
+    b.out.forEach(v=>{
+      ctx.beginPath();
+      ctx.arc(sc(v), cy, 3, 0, Math.PI*2);
+      ctx.fillStyle="rgba(248,113,113,0.75)";
+      ctx.fill();
+    });
+  });
+
+  /* eje X etiquetas */
+  ctx.fillStyle="rgba(232,236,244,0.40)";
+  ctx.font="10px 'DM Mono',monospace";
+  ctx.textAlign="center";
+  for(let g=0;g<=5;g++){
+    const v=(mn+g*(mx-mn)/5).toFixed(0)+"°";
+    ctx.fillText(v, pad.left+g*W/5, c.height-8);
+  }
+}
+
+/* ===== TABLA ===== */
+function actualizarTabla(){
+  const head=document.getElementById("tHead");
+  const body=document.getElementById("tBody");
+
+  head.innerHTML=`<th>Estación</th><th>N</th><th>Media</th><th>Mediana</th>
+    <th>Q1</th><th>Q3</th><th>RIC</th><th>Desv.Típ.</th><th>Mín</th><th>Máx</th><th>Atípicos</th>`;
+
+  body.innerHTML="";
+  NOMBRES.forEach((nombre,e)=>{
+    const arr=data[e];
+    const b=boxStats(arr);
+    const m=media(arr);
+    const d=desv(arr);
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td style="text-align:left;font-weight:700">${nombre}</td>
+      <td><span class="chip-cool">${arr.length}</span></td>
+      <td><span class="chip-warm">${m.toFixed(1)}°</span></td>
+      <td>${b.q2.toFixed(1)}°</td>
+      <td>${b.q1.toFixed(1)}°</td>
+      <td>${b.q3.toFixed(1)}°</td>
+      <td>${b.iqr.toFixed(1)}°</td>
+      <td>${d.toFixed(2)}°</td>
+      <td style="color:var(--cool)">${b.min.toFixed(1)}°</td>
+      <td style="color:var(--accent)">${b.max.toFixed(1)}°</td>
+      <td>${b.out.length}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+/* ===== FOOTER ===== */
+function actualizarFooter(arr, eVal){
+  const m=media(arr), d=desv(arr), b=boxStats(arr);
+  const est=eVal==="all" ? "Todas las estaciones" : NOMBRES[parseInt(eVal)];
+  document.getElementById("footerNote").innerHTML=
+    `// Vista: <strong style="color:var(--accent2)">${est}</strong> · N=${arr.length} observaciones<br>` +
+    `// Media=${m.toFixed(2)}°  σ=${d.toFixed(2)}°  IQR=${b.iqr.toFixed(2)}°  Atípicos=${b.out.length}<br>` +
+    `// Datos simulados con distribución N(μ_estacional, σ=3.2) + offset por estación`;
+}
+
+/* ===== EXPORT CSV ===== */
+function exportarCSV(){
+  let csv="Estacion,Dia,Temperatura\n";
+  NOMBRES.forEach((nombre,e)=>{
+    data[e].forEach((v,d)=>{ csv+=`${nombre},${d+1},${v}\n`; });
+  });
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="temperaturas.csv";
+  a.click();
+}
+
+/* ===== INIT ===== */
+generarDatos();
+
+/* Redibujar al resize */
+let resizeTimer;
+window.addEventListener("resize", ()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(actualizarVistas, 120);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolución de Probabilidad y Covarianza</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #f4f7f6;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        .problem-box {
+            background-color: #eef2f3;
+            padding: 15px;
+            border-left: 5px solid #3498db;
+            margin: 20px 0;
+            font-style: italic;
+        }
+        .solution {
+            padding-left: 10px;
+        }
+        .step {
+            font-weight: bold;
+            color: #e67e22;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Resolución de Problemas: Probabilidad y Esperanza</h2>
+
+        <section>
+            <h3>Ejercicio 27: Tiempo de Espera de Annie y Alvie</h3>
+            <div class="problem-box">
+                Annie (X) y Alvie (Y) llegan entre las 12:00 y las 1:00. <br>
+                \( f_X(x) = 3x^2, \quad 0 \leq x \leq 1 \) <br>
+                \( f_Y(y) = 2y, \quad 0 \leq y \leq 1 \) <br>
+                ¿Cuál es la cantidad esperada de tiempo que el primero debe esperar al segundo? \( E[|X - Y|] \).
+            </div>
+
+            <div class="solution">
+                <p><span class="step">1. Definir la densidad conjunta:</span> Como son independientes:</p>
+                $$f(x,y) = f_X(x) \cdot f_Y(y) = 3x^2 \cdot 2y = 6x^2y$$
+
+                <p><span class="step">2. Plantear la integral de la esperanza:</span></p>
+                $$E[|X - Y|] = \int_{0}^{1} \int_{0}^{1} |x - y| \cdot 6x^2y \, dy \, dx$$
+
+                <p><span class="step">3. Dividir la región en dos partes (donde \(x > y\) y \(y > x\)):</span></p>
+                $$E = \int_{0}^{1} \left( \int_{0}^{x} (x-y)6x^2y \, dy + \int_{x}^{1} (y-x)6x^2y \, dy \right) dx$$
+
+                <p><span class="step">4. Resultado:</span> Tras resolver las integrales polinómicas:</p>
+                $$E = \int_{0}^{1} (x^4 + 2x^2 - 3x^5) dx = \left[ \frac{x^5}{5} + \frac{2x^3}{3} - \frac{3x^6}{6} \right]_0^1 = \frac{1}{5} + \frac{2}{3} - \frac{1}{2} = \frac{11}{30}$$
+                <p><strong>El tiempo esperado es \( \frac{11}{30} \) de hora (22 minutos).</strong></p>
+            </div>
+        </section>
+
+        <hr>
+
+        <section>
+            <h3>Ejercicio 28: Demostración de Independencia</h3>
+            <div class="problem-box">
+                Demuestre que si \(X\) y \(Y\) son independientes, entonces \(E(XY) = E(X) \cdot E(Y)\).
+            </div>
+
+            <div class="solution">
+                <p><span class="step">Demostración:</span></p>
+                <p>Partimos de la definición de esperanza para el producto en el caso continuo:</p>
+                $$E(XY) = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} xy \cdot f(x,y) \, dx \, dy$$
+
+                <p>Por la propiedad de independencia, sabemos que \( f(x,y) = f_X(x)f_Y(y) \). Sustituimos:</p>
+                $$E(XY) = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} xy \cdot f_X(x)f_Y(y) \, dx \, dy$$
+
+                <p>Como las variables son separables, podemos reorganizar las integrales:</p>
+                $$E(XY) = \left( \int_{-\infty}^{\infty} x f_X(x) \, dx \right) \cdot \left( \int_{-\infty}^{\infty} y f_Y(y) \, dy \right)$$
+
+                <p>Por definición, cada paréntesis corresponde a la esperanza individual:</p>
+                $$E(XY) = E(X) \cdot E(Y) \quad \blacksquare$$
+            </div>
+        </section>
+    </div>
+</body>
+</html>

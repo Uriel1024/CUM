@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div style="padding: 40px;">
+        <div style="background: #0A0A0A; padding: 20px; border-radius: 12px; color: #F5F5F5;">
+            <p><strong>Datos proporcionados:</strong></p>
+            
+            <p>\( P(A) = 0.40 \)</p>
+            <p>\( P(B) = 0.30 \)</p>
+            <p>\( P(C) = 0.25 \)</p>
+            <p>\( P(A \cap B) = 0.23 \)</p>
+            <p>\( P(A^c \cap B^c \cap C^c) = 0.51 \)</p>
+            <p><strong>Ademas sabemos que: </strong></p>
+            <p>\(P(A | C) = .88\)</p>  
+            <p>\(P(C | B) = .70\)</p>  
+            
+        </div>
+    </div>
+<div style="padding: 20px 40px;">
+        
+        <h3 style="color: #4CAF50; margin-top: 0;">Inciso A</h3>
+        <p>¿Cuál es la probabilidad de que un vacacionista que revisa su correo (A) también use celular (B)?</p>
+        <hr style="border: 0.5px solid #222; margin: 15px 0;">
+        <p>Usamos la fórmula de <strong>Probabilidad Condicional</strong>:</p>
+        <p style="font-size: 1.2em; background: #1a1a1a; padding: 10px; border-radius: 8px; text-align: center;">
+            \( P(B|A) = \frac{P(A \cap B)}{P(A)} = \frac{0.23}{0.40} = \mathbf{0.575} \)
+        </p>
+        <p><em>Resultado: 57.5% de probabilidad.</em></p>
+
+        <div style="display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
+            
+            <div style="text-align: center;">
+                <h3 style="color: #4CAF50; margin-bottom: 5px;">Diagrama de VENN</h3>
+                <p>\(P(A \cap B)\)</p>
+                <img src="img/incisoa2.png" style="max-width: 100%; height: auto;">
+            </div>
+
+            <div style="text-align: center;">
+                <h3 style="color: #4CAF50; margin-bottom: 5px;">Diagrama de VENN</h3>
+                <p>\(P(B)\)</p>
+                <img src="img/inciso1.png" style="max-width: 100%; height: auto;">
+            </div>
+
+        </div>
+
+        <br>
+        <br>
+        <br>
+        <br>
+
+        <h3 style="color: #2196F3; margin-top: 0;">Inciso B</h3>
+        <p>¿Cuál es la probabilidad de que alguien con laptop (C) también use celular (B)?</p>
+
+        <hr style="border: 0.5px solid #222; margin: 15px 0;">
+   
+        <p style="font-size: 1.2em; background: #1a1a1a; padding: 10px; border-radius: 8px; text-align: center;">
+            \[ P(C \cap B) = P(C|B) \cdot P(B) = 0.70 \cdot 0.30 = 0.21 \]
+        </p>
+
+        <p>Ahora, calculamos la probabilidad condicional final:</p>
+
+        <p style="font-size: 1.2em; background: #1a1a1a; padding: 10px; border-radius: 8px; text-align: center;">
+            \( P(B|C) = \frac{P(B \cap C)}{P(C)} = \frac{0.21}{0.25} = \mathbf{0.84} \)
+        </p>
+
+        <p><em>Resultado: 84% de probabilidad.</em></p>
+
+        <div style="display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
+            
+            <div style="text-align: center;">
+                <h3 style="color: #2196F3; margin-bottom: 5px;">Diagrama de VENN</h3>
+                <p>\(P(C \cap B)\)</p>
+                <img src="img/incisob1.png" style="max-width: 100%; height: auto;">
+            </div>
+
+            <div style="text-align: center;">
+                <h3 style="color: #2196F3; margin-bottom: 5px;">Diagrama de VENN</h3>
+                <p>\(P(C)\)</p>
+                <img src="img/incisob2.png" style="max-width: 100%; height: auto;">
+            </div>
+
+        </div>
+
+        <br>
+        <br>
+        <br>
+        <br>
+
+        <h3 style="color: #FF9800; margin-top: 0;">Inciso C</h3>
+        <p>Si el vacacionista revisó su correo (A) y trajo laptop (C), ¿cuál es la probabilidad de que use celular (B)?</p>
+
+        <hr style="border: 0.5px solid #222; margin: 15px 0;">
+   
+
+        <p>Buscamos \( P(B | A \cap C) \). Primero necesitamos los componentes:</p>
+        <ul style="line-height: 1.8;">
+        <li><strong>Intersección A y C:</strong> \( P(A \cap C) = P(A|C) \cdot P(C) = 0.88 \cdot 0.25 = 0.22 \)</li>
+        <li><strong>Unión Total:</strong> \( P(A \cup B \cup C) = 1 - 0.51 = 0.49 \)</li>
+        <li><strong>Triple Intersección:</strong> Despejando de la fórmula de unión, obtenemos \( P(A \cap B \cap C) = 0.20 \)</li>
+        </ul>
+
+        <p>Ahora, calculamos la probabilidad condicional final:</p>
+
+        <p style="font-size: 1.2em; background: #1a1a1a; padding: 10px; border-radius: 8px; text-align: center;">
+            \( P(B | A \cap C) = \frac{P(A \cap B \cap C)}{P(A \cap C)} = \frac{0.20}{0.22} \approx \mathbf{0.9091} \)
+        </p>
+
+        <p><em>Resultado: 90.91% de probabilidad.</em></p>
+
+        <div style="display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
+            
+            <div style="text-align: center;">
+                <h3 style="color: #FF9800; margin-bottom: 5px;">Diagrama de VENN</h3>
+                <p>\(P(A \cap B\cap C \))</p>
+                <img src="img/incisoc1.png" style="max-width: 100%; height: auto;">
+            </div>
+
+            <div style="text-align: center;">
+                <h3 style="color: #FF9800; margin-bottom: 5px;">Diagrama de VENN</h3>
+                <p>\(P(A \cap C)\)</p>
+                <img src="img/incisoc2.png" style="max-width: 100%; height: auto;">
+            </div>
+
+        </div>
+
+
+
+
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
